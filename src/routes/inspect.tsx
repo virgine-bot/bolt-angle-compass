@@ -172,6 +172,10 @@ function InspectFlow() {
         <>
           <section className="px-5 pt-3 pb-4">
             <p className="eyebrow">Inspection result</p>
+            <p className="mt-2 rounded-xl border border-dashed bg-secondary px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-foreground">Demo result.</span> The detection model isn't connected yet,
+              so these bolts and angles are sample values from the reference photo — your photo was not analyzed.
+            </p>
             <h1 className="mt-1 font-display text-[26px] font-extrabold tracking-tight">
               {getVehicle(result.vehicleId)?.code} · {getReference(result.referenceId)?.location}
             </h1>
@@ -389,7 +393,7 @@ function ProcessingScreen({ image, onDone }: { image: string; onDone: () => void
 
   return (
     <div className="flex flex-1 flex-col px-5 pt-10">
-      <p className="text-center font-mono text-[11px] uppercase tracking-widest text-scan-muted">Analyzing on device</p>
+      <p className="text-center font-mono text-[11px] uppercase tracking-widest text-scan-muted">Demo · simulated analysis</p>
       <h1 className="mt-1 text-center font-display text-2xl font-extrabold">Measuring rotation…</h1>
       <div className="relative mt-6 aspect-square overflow-hidden rounded-3xl scanline">
         <img src={image} alt="Captured inspection" className="size-full object-cover" />
