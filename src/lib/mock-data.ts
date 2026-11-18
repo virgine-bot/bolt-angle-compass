@@ -1,4 +1,4 @@
-// Prototype data. Replace with API calls once the backend/model service is ready.
+// Prototype vehicles and reference photos. Inspections are stored in Lovable Cloud (see inspections-api.ts).
 import boltFork from "@/assets/bolt-fork.jpg";
 import boltStem from "@/assets/bolt-stem.jpg";
 import boltAxle from "@/assets/bolt-axle.jpg";
@@ -48,6 +48,8 @@ export interface Inspection {
   processingMs: number;
   inspector: string;
   bolts: BoltResult[];
+  /** Signed link to the original inspection photo; null when none was saved (demo capture). */
+  photoUrl?: string | null | undefined;
 }
 
 export const vehicles: Vehicle[] = [
@@ -80,29 +82,6 @@ export const references: ReferenceImage[] = [
   { id: "r7", vehicleId: "bc-1904", location: "Handlebar stem", image: boltStem, capturedAt: "2026-10-28", bolts: stemBolts },
 ];
 
-export const inspections: Inspection[] = [
-  {
-    id: "ins-1048", vehicleId: "sc-0142", referenceId: "r1", capturedAt: "2026-11-18T08:42:00", processingMs: 3240, inspector: "Erlangga H.",
-    bolts: [ { boltId: "b1", angle: 2.1, confidence: 0.93 }, { boltId: "b2", angle: 11.4, confidence: 0.88 }, { boltId: "b3", angle: -18.7, confidence: 0.91 } ],
-  },
-  {
-    id: "ins-1047", vehicleId: "bc-2210", referenceId: "r3", capturedAt: "2026-11-17T16:10:00", processingMs: 2810, inspector: "Airi S.",
-    bolts: [ { boltId: "b1", angle: 0.8, confidence: 0.95 }, { boltId: "b2", angle: -1.6, confidence: 0.94 }, { boltId: "b3", angle: 3.2, confidence: 0.9 } ],
-  },
-  {
-    id: "ins-1046", vehicleId: "mb-0031", referenceId: "r4", capturedAt: "2026-11-17T10:25:00", processingMs: 2150, inspector: "Anas N.",
-    bolts: [ { boltId: "b1", angle: 7.9, confidence: 0.86 } ],
-  },
-  {
-    id: "ins-1045", vehicleId: "sc-0087", referenceId: "r6", capturedAt: "2026-11-16T14:02:00", processingMs: 3610, inspector: "Erlangga H.",
-    bolts: [ { boltId: "b1", angle: 1.2, confidence: 0.9 }, { boltId: "b2", angle: -2.4, confidence: 0.89 }, { boltId: "b3", angle: 4.1, confidence: 0.87 } ],
-  },
-  {
-    id: "ins-1044", vehicleId: "bc-1904", referenceId: "r7", capturedAt: "2026-11-15T09:30:00", processingMs: 2990, inspector: "Airi S.",
-    bolts: [ { boltId: "b1", angle: 16.3, confidence: 0.84 }, { boltId: "b2", angle: 0.4, confidence: 0.93 }, { boltId: "b3", angle: -6.2, confidence: 0.88 } ],
-  },
-];
-
 /**
  * Simulated model output for a new capture. Reference r2 (fork clamp, steep angle in the
  * sample) returns a low-confidence detection so the retake prompt can be demoed.
@@ -132,7 +111,5 @@ export function simulateInspection(referenceId: string): Inspection {
 
 export const getVehicle = (id: string) => vehicles.find((v) => v.id === id);
 export const getReference = (id: string) => references.find((r) => r.id === id);
-export const getInspection = (id: string) => inspections.find((i) => i.id === id);
 export const referencesFor = (vehicleId: string) => references.filter((r) => r.vehicleId === vehicleId);
-export const inspectionsFor = (vehicleId: string) => inspections.filter((i) => i.vehicleId === vehicleId);
-export const latestInspectionFor = (vehicleId: string) => inspectionsFor(vehicleId)[0];
+

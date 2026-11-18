@@ -7,7 +7,7 @@ import { VehicleIcon } from "@/components/bolt/vehicle-icon";
 import { APP_NAME } from "@/lib/app-config";
 import { getVehicle, inspectionsFor, referencesFor } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/vehicles/$vehicleId")({
+export const Route = createFileRoute("/_authenticated/vehicles/$vehicleId")({
   loader: ({ params }) => {
     const vehicle = getVehicle(params.vehicleId);
     if (!vehicle) throw notFound();

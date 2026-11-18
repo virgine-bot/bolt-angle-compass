@@ -9,7 +9,7 @@ import { APP_NAME } from "@/lib/app-config";
 import { latestInspectionFor, referencesFor, vehicles, type VehicleType } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/fleet")({
+export const Route = createFileRoute("/_authenticated/fleet")({
   head: () => ({
     meta: [
       { title: `Fleet — ${APP_NAME}` },

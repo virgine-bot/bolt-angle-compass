@@ -5,7 +5,7 @@ import { APP_NAME } from "@/lib/app-config";
 import { inspections } from "@/lib/mock-data";
 import { format } from "date-fns";
 
-export const Route = createFileRoute("/history")({
+export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
     meta: [
       { title: `Inspection history — ${APP_NAME}` },

@@ -17,7 +17,7 @@ import {
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/inspect")({
+export const Route = createFileRoute("/_authenticated/inspect")({
   validateSearch: (s: Record<string, unknown>): { vehicle?: string | undefined } => ({
     vehicle: typeof s["vehicle"] === "string" ? s["vehicle"] : undefined,
   }),

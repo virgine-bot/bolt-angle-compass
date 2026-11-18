@@ -8,7 +8,7 @@ import { getBoltStatus } from "@/lib/inspection";
 import { inspections, vehicles } from "@/lib/mock-data";
 import boltStem from "@/assets/bolt-stem.jpg";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: `${APP_NAME} — Fleet inspection dashboard` },

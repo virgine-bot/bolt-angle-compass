@@ -5,7 +5,7 @@ import { ResultView } from "@/components/bolt/result-view";
 import { APP_NAME } from "@/lib/app-config";
 import { getInspection, getVehicle } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/results/$inspectionId")({
+export const Route = createFileRoute("/_authenticated/results/$inspectionId")({
   loader: ({ params }) => {
     const inspection = getInspection(params.inspectionId);
     if (!inspection) throw notFound();
