@@ -1,4 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { needsRetake } from "@/lib/inspection";
+import { inspectionsKey, saveInspection } from "@/lib/inspections-api";
+import { displayName } from "@/lib/user";
 import { ArrowLeft, Check, ChevronRight, Image as ImageIcon, Layers, Loader2, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
@@ -35,8 +39,16 @@ export const Route = createFileRoute("/_authenticated/inspect")({
 type Step = "vehicle" | "reference" | "capture" | "processing" | "result";
 const stepOrder: Step[] = ["vehicle", "reference", "capture", "processing", "result"];
 
+const authRoute = getRouteApi("/_authenticated");
+
 function InspectFlow() {
   const search = Route.useSearch();
+  const { user } = authRoute.useRouteContext();
+  const queryClient = useQueryClient();
+  const save = useMutation({
+    mutationFn: (vars: { inspection: Inspection; photo: string | null }) => saveInspection({ ...vars, user }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: inspectionsKey }),
+  });
   const navigate = useNavigate();
   const [vehicleId, setVehicleId] = useState<string | null>(search.vehicle ?? null);
   const [referenceId, setReferenceId] = useState<string | null>(null);
@@ -67,8 +79,11 @@ function InspectFlow() {
           <ProcessingScreen
             image={captured ?? getReference(referenceId!)!.image}
             onDone={() => {
-              setResult(simulateInspection(referenceId!));
+              const r = { ...simulateInspection(referenceId!), inspector: displayName(user) };
+              setResult(r);
               setStep("result");
+              if (needsRetake(r.bolts.map((b) => b.confidence))) save.reset();
+              else save.mutate({ inspection: r, photo: captured });
             }}
           />
         )}
@@ -180,6 +195,22 @@ function InspectFlow() {
               {getVehicle(result.vehicleId)?.code} · {getReference(result.referenceId)?.location}
             </h1>
           </section>
+          <div className="mx-5 mb-4 flex items-center justify-between gap-3 rounded-xl border bg-card px-3 py-2.5 text-sm">
+            {save.isPending && <span className="text-muted-foreground">Saving photo and results…</span>}
+            {save.isSuccess && (
+              <>
+                <span className="font-medium">Saved to {getVehicle(result.vehicleId)?.code} history</span>
+                <Link to="/results/$inspectionId" params={{ inspectionId: save.data }} className="font-semibold text-primary">View</Link>
+              </>
+            )}
+            {save.isError && (
+              <>
+                <span className="text-loose">Couldn't save this inspection.</span>
+                <button type="button" onClick={() => save.variables && save.mutate(save.variables)} className="font-semibold text-primary">Try again</button>
+              </>
+            )}
+            {save.isIdle && <span className="text-muted-foreground">Not saved — retake the photo first.</span>}
+          </div>
           <ResultView
             inspection={result}
             inspectionImage={captured ?? undefined}

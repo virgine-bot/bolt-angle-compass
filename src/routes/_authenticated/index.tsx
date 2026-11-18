@@ -1,14 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { latestPerArea } from "@/lib/history";
+import { inspectionsQuery } from "@/lib/inspections-api";
+import { displayName, initials } from "@/lib/user";
 import { ArrowRight, ScanLine } from "lucide-react";
 import { AppShell } from "@/components/bolt/app-shell";
 import { InspectionRow, worstStatus } from "@/components/bolt/inspection-row";
 import { LogoMark } from "@/components/bolt/logo-mark";
 import { APP_NAME } from "@/lib/app-config";
 import { getBoltStatus } from "@/lib/inspection";
-import { inspections, vehicles } from "@/lib/mock-data";
+import { vehicles } from "@/lib/mock-data";
 import boltStem from "@/assets/bolt-stem.jpg";
 
 export const Route = createFileRoute("/_authenticated/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [
       { title: `${APP_NAME} — Fleet inspection dashboard` },
@@ -20,10 +27,25 @@ export const Route = createFileRoute("/_authenticated/")({
   component: Home,
 });
 
+const authRoute = getRouteApi("/_authenticated");
+
 function Home() {
+  const { user } = authRoute.useRouteContext();
+  const name = displayName(user);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data: all } = useSuspenseQuery(inspectionsQuery());
+  const inspections = latestPerArea(all);
+  const hour = new Date().getHours();
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", search: { redirect: undefined }, replace: true });
+  };
   const allBolts = inspections.flatMap((i) => i.bolts);
   const flagged = allBolts.filter((b) => getBoltStatus(b.angle) !== "ok").length;
-  const avgMs = inspections.reduce((s, i) => s + i.processingMs, 0) / inspections.length;
+  const avgMs = inspections.reduce((s, i) => s + i.processingMs, 0) / Math.max(1, inspections.length);
   const attention = inspections.filter((i) => worstStatus(i) !== "ok");
 
   return (
@@ -33,17 +55,23 @@ function Home() {
           <LogoMark />
           <span className="font-display text-lg font-extrabold tracking-tight">{APP_NAME}</span>
         </div>
-        <div className="flex size-10 items-center justify-center rounded-full bg-secondary font-mono text-sm font-semibold">
-          SV
-        </div>
+        <button
+          type="button"
+          onClick={signOut}
+          title={`Signed in as ${name} — tap to sign out`}
+          className="flex h-10 items-center gap-2 rounded-full bg-secondary pr-3 pl-1 text-xs font-medium"
+        >
+          <span className="flex size-8 items-center justify-center rounded-full bg-card font-mono text-sm font-semibold">{initials(name)}</span>
+          Sign out
+        </button>
       </header>
 
       <section className="px-5 pt-6">
-        <p className="eyebrow">Wed · 18 Nov 2026</p>
+        <p className="eyebrow">{format(new Date(), "EEE · d MMM yyyy")}</p>
         <h1 className="mt-1 font-display text-[30px] leading-[1.05] font-extrabold tracking-tight">
-          Good evening,
+          {hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"},
           <br />
-          Seraphim.
+          {name.split(" ")[0]}.
         </h1>
       </section>
 

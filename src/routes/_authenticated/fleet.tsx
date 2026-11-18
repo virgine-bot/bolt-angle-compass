@@ -6,10 +6,14 @@ import { worstStatus } from "@/components/bolt/inspection-row";
 import { StatusBadge } from "@/components/bolt/status-badge";
 import { VehicleIcon } from "@/components/bolt/vehicle-icon";
 import { APP_NAME } from "@/lib/app-config";
-import { latestInspectionFor, referencesFor, vehicles, type VehicleType } from "@/lib/mock-data";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { inspectionsForVehicle } from "@/lib/history";
+import { inspectionsQuery } from "@/lib/inspections-api";
+import { referencesFor, vehicles, type VehicleType } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/fleet")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [
       { title: `Fleet — ${APP_NAME}` },
@@ -31,6 +35,7 @@ const filters: Array<{ id: VehicleType | "all"; label: string }> = [
 function Fleet() {
   const [filter, setFilter] = useState<VehicleType | "all">("all");
   const [q, setQ] = useState("");
+  const { data: all } = useSuspenseQuery(inspectionsQuery());
   const list = vehicles.filter(
     (v) =>
       (filter === "all" || v.type === filter) &&
@@ -69,7 +74,7 @@ function Fleet() {
 
       <div className="flex flex-col gap-2.5 px-5 pt-4">
         {list.map((v) => {
-          const last = latestInspectionFor(v.id);
+          const last = inspectionsForVehicle(all, v.id)[0];
           return (
             <Link
               key={v.id}

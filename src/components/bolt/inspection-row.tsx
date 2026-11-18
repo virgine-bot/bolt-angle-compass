@@ -22,7 +22,7 @@ export function InspectionRow({ inspection }: { inspection: Inspection }) {
       params={{ inspectionId: inspection.id }}
       className="flex items-center gap-3 rounded-2xl border bg-card p-3 shadow-card transition-transform active:scale-[0.99]"
     >
-      <img src={r.image} alt="" className="size-14 rounded-xl object-cover" />
+      <img src={inspection.photoUrl ?? r.image} alt="" className="size-14 rounded-xl object-cover" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <VehicleIcon type={v.type} className="size-3.5 text-muted-foreground" />

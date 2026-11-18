@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { AppShell, ScreenHeader } from "@/components/bolt/app-shell";
 import { InspectionRow } from "@/components/bolt/inspection-row";
 import { APP_NAME } from "@/lib/app-config";
-import { inspections } from "@/lib/mock-data";
-import { format } from "date-fns";
+import { inspectionsQuery } from "@/lib/inspections-api";
+import type { Inspection } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/_authenticated/history")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [
       { title: `Inspection history — ${APP_NAME}` },
@@ -18,9 +21,9 @@ export const Route = createFileRoute("/_authenticated/history")({
 });
 
 function HistoryPage() {
-  const groups = inspections.reduce<Record<string, typeof inspections>>((acc, i) => {
-    const key = format(new Date(i.capturedAt), "EEEE, d MMM");
-    (acc[key] ??= []).push(i);
+  const { data: inspections } = useSuspenseQuery(inspectionsQuery());
+  const groups = inspections.reduce<Record<string, Inspection[]>>((acc, i) => {
+    (acc[format(new Date(i.capturedAt), "EEEE, d MMM")] ??= []).push(i);
     return acc;
   }, {});
 
