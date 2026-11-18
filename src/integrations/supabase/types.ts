@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       inspections: {
         Row: {
+          area_label: string | null
           bolts: Json
           captured_at: string
           created_at: string
@@ -24,10 +25,13 @@ export type Database = {
           inspector_name: string
           photo_path: string | null
           processing_ms: number
-          reference_id: string
-          vehicle_id: string
+          reference_id: string | null
+          reference_photo_path: string | null
+          vehicle_id: string | null
+          vehicle_type: string
         }
         Insert: {
+          area_label?: string | null
           bolts?: Json
           captured_at?: string
           created_at?: string
@@ -36,10 +40,13 @@ export type Database = {
           inspector_name: string
           photo_path?: string | null
           processing_ms?: number
-          reference_id: string
-          vehicle_id: string
+          reference_id?: string | null
+          reference_photo_path?: string | null
+          vehicle_id?: string | null
+          vehicle_type?: string
         }
         Update: {
+          area_label?: string | null
           bolts?: Json
           captured_at?: string
           created_at?: string
@@ -48,8 +55,10 @@ export type Database = {
           inspector_name?: string
           photo_path?: string | null
           processing_ms?: number
-          reference_id?: string
-          vehicle_id?: string
+          reference_id?: string | null
+          reference_photo_path?: string | null
+          vehicle_id?: string | null
+          vehicle_type?: string
         }
         Relationships: []
       }

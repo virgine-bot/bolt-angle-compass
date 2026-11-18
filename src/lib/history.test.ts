@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import { compareInspections, latestPerArea, previousOf } from "./history";
 import type { Inspection } from "./mock-data";
 
-const ins = (id: string, referenceId: string, capturedAt: string, angles: number[]): Inspection => ({
+const ins = (id: string, seriesId: string, capturedAt: string, angles: Array<number | null>): Inspection => ({
   id,
-  vehicleId: "sc-0142",
-  referenceId,
+  vehicleType: "scooter",
+  area: null,
+  seriesId,
   capturedAt,
   processingMs: 3000,
   inspector: "Test",
-  bolts: angles.map((angle, i) => ({ boltId: `b${i + 1}`, angle, confidence: 0.9 })),
+  bolts: angles.map((angle, i) => ({ id: `b${i + 1}`, boltId: `b${i + 1}`, label: `B${i + 1}`, x: 50, y: 50, size: 10, angle, confidence: 0.9 })),
 });
 
 const oct = ins("a", "r1", "2026-10-20T08:00:00Z", [0.3, 1.8, -3.2]);
@@ -19,13 +20,13 @@ const other = ins("d", "r2", "2026-11-19T08:00:00Z", [3]);
 const all = [oct, nov18, other, nov4];
 
 describe("inspection history", () => {
-  it("finds the previous inspection of the same area, not another area", () => {
+  it("finds the previous inspection of the same spot, not another spot", () => {
     expect(previousOf(all, nov18)?.id).toBe("b");
     expect(previousOf(all, oct)).toBeUndefined();
     expect(previousOf(all, other)).toBeUndefined();
   });
 
-  it("keeps only the latest inspection per area", () => {
+  it("keeps only the latest inspection per spot", () => {
     expect(latestPerArea(all).map((i) => i.id)).toEqual(["d", "c"]);
   });
 
@@ -38,5 +39,10 @@ describe("inspection history", () => {
     // B2: 5.6° (Monitor) → 11.4° (Monitor) is not worse; B3: −9.4° (Monitor) → −18.7° (Loose) is.
     const changes = compareInspections(nov4, nov18);
     expect(changes.map((c) => c.worsened)).toEqual([false, false, true]);
+  });
+
+  it("has no rotation change when a photo had no reference (detect only)", () => {
+    const quick = ins("e", "r1", "2026-11-20T08:00:00Z", [null, null, null]);
+    expect(compareInspections(nov18, quick).map((c) => c.delta)).toEqual([null, null, null]);
   });
 });

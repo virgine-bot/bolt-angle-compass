@@ -15,6 +15,13 @@
       "when": 1795002338121,
       "tag": "0001_open_inspections_without_login",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795004282872,
+      "tag": "0002_general_inspections",
+      "breakpoints": true
     }
   ]
 }

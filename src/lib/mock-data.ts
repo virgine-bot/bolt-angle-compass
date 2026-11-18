@@ -1,18 +1,23 @@
-// Prototype vehicles and reference photos. Inspections are stored in Lovable Cloud (see inspections-api.ts).
+// Vehicle categories, legacy sample references and the simulated detector. Saved inspections
+// live in Lovable Cloud (see inspections-api.ts). Swap simulateInspection for the real model API.
 import boltFork from "@/assets/bolt-fork.jpg";
 import boltStem from "@/assets/bolt-stem.jpg";
 import boltAxle from "@/assets/bolt-axle.jpg";
 
-export type VehicleType = "bicycle" | "motorbike" | "scooter";
+export type VehicleType = "motorbike" | "bicycle" | "scooter" | "other";
 
-export interface Vehicle {
-  id: string;
-  code: string;
-  name: string;
-  type: VehicleType;
-  depot: string;
-  odometer: string;
-}
+export const vehicleTypes: Array<{ id: VehicleType; label: string; plural: string }> = [
+  { id: "motorbike", label: "Motorbike", plural: "Motorbikes" },
+  { id: "bicycle", label: "Bicycle", plural: "Bicycles" },
+  { id: "scooter", label: "Scooter", plural: "Scooters" },
+  { id: "other", label: "Other", plural: "Other" },
+];
+export const isVehicleType = (v: string): v is VehicleType => vehicleTypes.some((t) => t.id === v);
+export const vehicleTypeLabel = (t: VehicleType) => vehicleTypes.find((x) => x.id === t)?.label ?? "Other";
+
+/** Optional quick picks for "which part?" — the inspector can also type anything or leave it empty. */
+export const areaSuggestions = ["Wheel / axle", "Brake", "Handlebar", "Frame", "Engine", "Exhaust", "Seat", "Suspension"];
+export const DEFAULT_AREA = "General bolt";
 
 export interface BoltRef {
   id: string;
@@ -22,44 +27,37 @@ export interface BoltRef {
   y: number;
   /** Box size in % of photo width. */
   size: number;
-  spec: string;
+  spec?: string | undefined;
 }
 
-export interface ReferenceImage {
-  id: string;
-  vehicleId: string;
-  location: string;
-  image: string;
-  capturedAt: string;
-  bolts: BoltRef[];
-}
-
-export interface BoltResult {
+export interface BoltResult extends BoltRef {
   boltId: string;
-  angle: number;
+  /** Rotation versus the reference photo in degrees; null when there was no reference (detect only). */
+  angle: number | null;
   confidence: number;
 }
 
 export interface Inspection {
   id: string;
-  vehicleId: string;
-  referenceId: string;
+  vehicleType: VehicleType;
+  /** Free-text part of the vehicle, e.g. "Brake"; null = general / not specified. */
+  area: string | null;
+  /** Inspections of the same spot share a series id, so they can be compared over time. */
+  seriesId: string;
   capturedAt: string;
   processingMs: number;
   inspector: string;
   bolts: BoltResult[];
-  /** Signed link to the original inspection photo; null when none was saved (demo capture). */
   photoUrl?: string | null | undefined;
+  photoPath?: string | null | undefined;
+  referencePhotoUrl?: string | null | undefined;
+  referencePhotoPath?: string | null | undefined;
 }
 
-export const vehicles: Vehicle[] = [
-  { id: "sc-0142", code: "SC-0142", name: "Honda Vario 125", type: "scooter", depot: "Surabaya Timur", odometer: "12,480 km" },
-  { id: "bc-2210", code: "BC-2210", name: "City Bike C3", type: "bicycle", depot: "Kyoto Station Dock", odometer: "3,105 km" },
-  { id: "mb-0031", code: "MB-0031", name: "Honda CB150R", type: "motorbike", depot: "Surabaya Timur", odometer: "21,940 km" },
-  { id: "sc-0087", code: "SC-0087", name: "Yamaha NMAX", type: "scooter", depot: "Bandung Dago", odometer: "8,772 km" },
-  { id: "bc-1904", code: "BC-1904", name: "E-Bike Pro", type: "bicycle", depot: "Osaka Umeda", odometer: "1,560 km" },
-];
+/** Sample photos used when the camera isn't available (demo mode). */
+export const samplePhotos = [boltAxle, boltFork, boltStem];
 
+// Older sample inspections pointed at preset reference photos; keep them readable.
 const stemBolts: BoltRef[] = [
   { id: "b1", label: "B1", x: 26, y: 9, size: 16, spec: "M5 · 5 Nm" },
   { id: "b2", label: "B2", x: 74, y: 9, size: 16, spec: "M5 · 5 Nm" },
@@ -71,45 +69,50 @@ const axleBolts: BoltRef[] = [
   { id: "b2", label: "B2", x: 39, y: 48, size: 12, spec: "M8 · 25 Nm" },
   { id: "b3", label: "B3", x: 66, y: 56, size: 18, spec: "M14 · 60 Nm" },
 ];
+export const legacyReferences: Record<string, { image: string; bolts: BoltRef[] }> = {
+  r1: { image: boltAxle, bolts: axleBolts },
+  r2: { image: boltFork, bolts: forkBolts },
+  r3: { image: boltStem, bolts: stemBolts },
+  r4: { image: boltFork, bolts: forkBolts },
+  r5: { image: boltAxle, bolts: axleBolts },
+  r6: { image: boltAxle, bolts: axleBolts },
+  r7: { image: boltStem, bolts: stemBolts },
+};
 
-export const references: ReferenceImage[] = [
-  { id: "r1", vehicleId: "sc-0142", location: "Rear axle & caliper", image: boltAxle, capturedAt: "2026-10-02", bolts: axleBolts },
-  { id: "r2", vehicleId: "sc-0142", location: "Front fork clamp", image: boltFork, capturedAt: "2026-10-02", bolts: forkBolts },
-  { id: "r3", vehicleId: "bc-2210", location: "Handlebar stem", image: boltStem, capturedAt: "2026-09-21", bolts: stemBolts },
-  { id: "r4", vehicleId: "mb-0031", location: "Front fork clamp", image: boltFork, capturedAt: "2026-08-30", bolts: forkBolts },
-  { id: "r5", vehicleId: "mb-0031", location: "Rear axle & caliper", image: boltAxle, capturedAt: "2026-08-30", bolts: axleBolts },
-  { id: "r6", vehicleId: "sc-0087", location: "Rear axle & caliper", image: boltAxle, capturedAt: "2026-10-11", bolts: axleBolts },
-  { id: "r7", vehicleId: "bc-1904", location: "Handlebar stem", image: boltStem, capturedAt: "2026-10-28", bolts: stemBolts },
-];
+const round1 = (n: number) => Math.round(n * 10) / 10;
+const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
 /**
- * Simulated model output for a new capture. Reference r2 (fork clamp, steep angle in the
- * sample) returns a low-confidence detection so the retake prompt can be demoed.
+ * Simulated model output. Finds 1–3 bolts anywhere in the photo; measures rotation only when a
+ * reference photo exists. Re-inspections reuse the previous bolt positions and drift a little.
+ * ~10% of runs return a low-confidence detection so the retake prompt can be demoed.
  */
-export function simulateInspection(referenceId: string): Inspection {
-  const ref = getReference(referenceId)!;
-  const presets: Record<string, Array<[number, number]>> = {
-    r2: [[3.4, 0.42]],
-    r1: [[1.4, 0.92], [6.8, 0.87], [-21.5, 0.9]],
-    r3: [[0.6, 0.94], [-12.3, 0.89], [1.9, 0.91]],
-    r4: [[9.2, 0.85]],
-    r5: [[0.9, 0.93], [1.1, 0.9], [2.6, 0.88]],
-    r6: [[-3.1, 0.9], [17.4, 0.86], [2.2, 0.89]],
-    r7: [[4.4, 0.92], [0.3, 0.95], [-8.8, 0.87]],
-  };
-  const values = presets[referenceId] ?? ref.bolts.map(() => [0, 0.9] as [number, number]);
-  return {
-    id: `ins-new-${Date.now()}`,
-    vehicleId: ref.vehicleId,
-    referenceId,
-    capturedAt: new Date().toISOString(),
-    processingMs: 2400 + Math.round(Math.random() * 1400),
-    inspector: "Seraphim V.",
-    bolts: ref.bolts.map((b, i) => ({ boltId: b.id, angle: values[i]?.[0] ?? 0, confidence: values[i]?.[1] ?? 0.9 })),
-  };
+export function simulateInspection({
+  hasReference,
+  previous,
+}: {
+  hasReference: boolean;
+  previous?: BoltResult[] | undefined;
+}): { bolts: BoltResult[]; processingMs: number } {
+  const lowConfidence = Math.random() < 0.1;
+  const base: BoltRef[] =
+    previous?.map(({ id, label, x, y, size, spec }) => ({ id, label, x, y, size, spec })) ??
+    Array.from({ length: 1 + Math.floor(Math.random() * 3) }, (_, i) => ({
+      id: `b${i + 1}`,
+      label: `B${i + 1}`,
+      x: Math.round(rand(22, 78)),
+      y: Math.round(rand(22, 78)),
+      size: Math.round(rand(12, 20)),
+    }));
+  const bolts = base.map((b, i) => {
+    const prevAngle = previous?.[i]?.angle ?? 0;
+    const drift = Math.random() < 0.25 ? rand(4, 20) : rand(-3, 3);
+    return {
+      ...b,
+      boltId: b.id,
+      angle: hasReference ? round1(prevAngle + drift * (Math.random() < 0.5 ? -1 : 1)) : null,
+      confidence: lowConfidence && i === 0 ? round1(rand(0.35, 0.55) * 100) / 100 : Math.round(rand(0.78, 0.96) * 100) / 100,
+    };
+  });
+  return { bolts, processingMs: 2200 + Math.round(Math.random() * 1600) };
 }
-
-export const getVehicle = (id: string) => vehicles.find((v) => v.id === id);
-export const getReference = (id: string) => references.find((r) => r.id === id);
-export const referencesFor = (vehicleId: string) => references.filter((r) => r.vehicleId === vehicleId);
-

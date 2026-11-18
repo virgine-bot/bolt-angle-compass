@@ -17,6 +17,11 @@ export function getBoltStatus(angleDeg: number): BoltStatus {
   return "loose";
 }
 
+/** Status for a bolt that may not have been measured (no reference photo) — null means "detected only". */
+export function measuredStatus(angleDeg: number | null): BoltStatus | null {
+  return angleDeg === null ? null : getBoltStatus(angleDeg);
+}
+
 export function needsRetake(confidences: number[]): boolean {
   return confidences.length === 0 || confidences.some((c) => c < MIN_CONFIDENCE);
 }
