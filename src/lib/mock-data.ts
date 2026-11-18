@@ -4,16 +4,15 @@ import boltFork from "@/assets/bolt-fork.jpg";
 import boltStem from "@/assets/bolt-stem.jpg";
 import boltAxle from "@/assets/bolt-axle.jpg";
 
-export type VehicleType = "motorbike" | "bicycle" | "scooter" | "other";
+export type VehicleType = "motorbike" | "bicycle" | "scooter";
 
 export const vehicleTypes: Array<{ id: VehicleType; label: string; plural: string }> = [
   { id: "motorbike", label: "Motorbike", plural: "Motorbikes" },
   { id: "bicycle", label: "Bicycle", plural: "Bicycles" },
   { id: "scooter", label: "Scooter", plural: "Scooters" },
-  { id: "other", label: "Other", plural: "Other" },
 ];
 export const isVehicleType = (v: string): v is VehicleType => vehicleTypes.some((t) => t.id === v);
-export const vehicleTypeLabel = (t: VehicleType) => vehicleTypes.find((x) => x.id === t)?.label ?? "Other";
+export const vehicleTypeLabel = (t: VehicleType) => vehicleTypes.find((x) => x.id === t)?.label ?? "Vehicle";
 
 /** Optional quick picks for "which part?" — the inspector can also type anything or leave it empty. */
 export const areaSuggestions = ["Wheel / axle", "Brake", "Handlebar", "Frame", "Engine", "Exhaust", "Seat", "Suspension"];
