@@ -7,7 +7,7 @@ import { APP_NAME } from "@/lib/app-config";
 import { inspectionsQuery } from "@/lib/inspections-api";
 import type { Inspection } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/_authenticated/history")({
+export const Route = createFileRoute("/history")({
   loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [

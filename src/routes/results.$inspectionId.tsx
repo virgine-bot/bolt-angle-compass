@@ -9,7 +9,7 @@ import { findInspection, previousOf } from "@/lib/history";
 import { inspectionsQuery } from "@/lib/inspections-api";
 import { getVehicle } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/_authenticated/results/$inspectionId")({
+export const Route = createFileRoute("/results/$inspectionId")({
   loader: async ({ context, params }) => {
     const list = await context.queryClient.ensureQueryData(inspectionsQuery());
     if (!findInspection(list, params.inspectionId)) throw notFound();

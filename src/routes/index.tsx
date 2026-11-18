@@ -1,10 +1,10 @@
-import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
 import { latestPerArea } from "@/lib/history";
 import { inspectionsQuery } from "@/lib/inspections-api";
-import { displayName, initials } from "@/lib/user";
+import { initials, useInspectorName } from "@/lib/user";
 import { ArrowRight, ScanLine } from "lucide-react";
 import { AppShell } from "@/components/bolt/app-shell";
 import { InspectionRow, worstStatus } from "@/components/bolt/inspection-row";
@@ -14,7 +14,7 @@ import { getBoltStatus } from "@/lib/inspection";
 import { vehicles } from "@/lib/mock-data";
 import boltStem from "@/assets/bolt-stem.jpg";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [
@@ -27,22 +27,12 @@ export const Route = createFileRoute("/_authenticated/")({
   component: Home,
 });
 
-const authRoute = getRouteApi("/_authenticated");
-
 function Home() {
-  const { user } = authRoute.useRouteContext();
-  const name = displayName(user);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const [name, setName] = useInspectorName();
+  const [editing, setEditing] = useState(false);
   const { data: all } = useSuspenseQuery(inspectionsQuery());
   const inspections = latestPerArea(all);
   const hour = new Date().getHours();
-  const signOut = async () => {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", search: { redirect: undefined }, replace: true });
-  };
   const allBolts = inspections.flatMap((i) => i.bolts);
   const flagged = allBolts.filter((b) => getBoltStatus(b.angle) !== "ok").length;
   const avgMs = inspections.reduce((s, i) => s + i.processingMs, 0) / Math.max(1, inspections.length);
@@ -57,21 +47,50 @@ function Home() {
         </div>
         <button
           type="button"
-          onClick={signOut}
-          title={`Signed in as ${name} — tap to sign out`}
+          onClick={() => setEditing(true)}
+          title="Name saved with your inspections — tap to change"
           className="flex h-10 items-center gap-2 rounded-full bg-secondary pr-3 pl-1 text-xs font-medium"
         >
-          <span className="flex size-8 items-center justify-center rounded-full bg-card font-mono text-sm font-semibold">{initials(name)}</span>
-          Sign out
+          <span className="flex size-8 items-center justify-center rounded-full bg-card font-mono text-sm font-semibold">{name ? initials(name) : "?"}</span>
+          {name ? name.split(" ")[0] : "Set your name"}
         </button>
       </header>
+
+      {editing && (
+        <form
+          className="mx-5 mt-4 flex gap-2 rounded-2xl border bg-card p-3 shadow-card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setName(String(new FormData(e.currentTarget).get("name") ?? ""));
+            setEditing(false);
+          }}
+        >
+          <input
+            name="name"
+            autoFocus
+            defaultValue={name}
+            maxLength={40}
+            placeholder="Your name (shown on inspections)"
+            aria-label="Your name"
+            className="min-w-0 flex-1 rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          <button className="rounded-xl bg-foreground px-4 text-sm font-semibold text-background">Save</button>
+        </form>
+      )}
 
       <section className="px-5 pt-6">
         <p className="eyebrow">{format(new Date(), "EEE · d MMM yyyy")}</p>
         <h1 className="mt-1 font-display text-[30px] leading-[1.05] font-extrabold tracking-tight">
-          {hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"},
-          <br />
-          {name.split(" ")[0]}.
+          {hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"}
+          {name ? (
+            <>
+              ,
+              <br />
+              {name.split(" ")[0]}.
+            </>
+          ) : (
+            "."
+          )}
         </h1>
       </section>
 

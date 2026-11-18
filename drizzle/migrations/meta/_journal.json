@@ -8,6 +8,13 @@
       "when": 1795000600368,
       "tag": "0000_create_inspections",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795002338121,
+      "tag": "0001_open_inspections_without_login",
+      "breakpoints": true
     }
   ]
 }

@@ -1,11 +1,9 @@
 // Inspections (results + original photos) live in Lovable Cloud. All reads and writes go
 // through this module; vehicles and reference photos still come from mock-data.
 import { queryOptions } from "@tanstack/react-query";
-import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import type { BoltResult, Inspection } from "@/lib/mock-data";
-import { displayName } from "@/lib/user";
 
 const BUCKET = "inspection-photos";
 const SIGNED_URL_SECONDS = 60 * 60;
@@ -70,16 +68,16 @@ async function toJpegBlob(dataUrl: string, maxSide = 1600): Promise<Blob> {
 export async function saveInspection({
   inspection,
   photo,
-  user,
+  inspectorName,
 }: {
   inspection: Inspection;
   photo: string | null;
-  user: User;
+  inspectorName: string;
 }): Promise<string> {
   const id = `ins-${crypto.randomUUID().replace(/-/g, "").slice(0, 10)}`;
   let photoPath: string | null = null;
   if (photo) {
-    photoPath = `${user.id}/${id}.jpg`;
+    photoPath = `shared/${id}.jpg`;
     const blob = await toJpegBlob(photo);
     const { error } = await supabase.storage.from(BUCKET).upload(photoPath, blob, { contentType: "image/jpeg" });
     if (error) throw error;
@@ -90,8 +88,8 @@ export async function saveInspection({
     reference_id: inspection.referenceId,
     captured_at: inspection.capturedAt,
     processing_ms: inspection.processingMs,
-    inspector_name: displayName(user),
-    inspector_id: user.id,
+    inspector_name: inspectorName,
+    inspector_id: null,
     bolts: inspection.bolts as unknown as Json,
     photo_path: photoPath,
   });

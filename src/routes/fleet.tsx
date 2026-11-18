@@ -12,7 +12,7 @@ import { inspectionsQuery } from "@/lib/inspections-api";
 import { referencesFor, vehicles, type VehicleType } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/fleet")({
+export const Route = createFileRoute("/fleet")({
   loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [

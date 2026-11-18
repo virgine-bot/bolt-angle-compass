@@ -12,7 +12,7 @@ import { inspectionsQuery } from "@/lib/inspections-api";
 import { getReference, getVehicle, type Inspection } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/compare")({
+export const Route = createFileRoute("/compare")({
   validateSearch: (s: Record<string, unknown>): { a: string; b: string } => ({
     a: typeof s["a"] === "string" ? s["a"] : "",
     b: typeof s["b"] === "string" ? s["b"] : "",

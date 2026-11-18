@@ -9,19 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedCompareRouteImport } from './routes/_authenticated/compare'
-import { Route as AuthenticatedFleetRouteImport } from './routes/_authenticated/fleet'
-import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
-import { Route as AuthenticatedInspectRouteImport } from './routes/_authenticated/inspect'
-import { Route as AuthenticatedResultsInspectionIdRouteImport } from './routes/_authenticated/results.$inspectionId'
-import { Route as AuthenticatedVehiclesVehicleIdRouteImport } from './routes/_authenticated/vehicles.$vehicleId'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as InspectRouteImport } from './routes/inspect'
+import { Route as ResultsInspectionIdRouteImport } from './routes/results.$inspectionId'
+import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -29,90 +28,73 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCompareRoute = AuthenticatedCompareRouteImport.update({
+const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedFleetRoute = AuthenticatedFleetRouteImport.update({
+const FleetRoute = FleetRouteImport.update({
   id: '/fleet',
   path: '/fleet',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedInspectRoute = AuthenticatedInspectRouteImport.update({
+const InspectRoute = InspectRouteImport.update({
   id: '/inspect',
   path: '/inspect',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedResultsInspectionIdRoute =
-  AuthenticatedResultsInspectionIdRouteImport.update({
-    id: '/results/$inspectionId',
-    path: '/results/$inspectionId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedVehiclesVehicleIdRoute =
-  AuthenticatedVehiclesVehicleIdRouteImport.update({
-    id: '/vehicles/$vehicleId',
-    path: '/vehicles/$vehicleId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const ResultsInspectionIdRoute = ResultsInspectionIdRouteImport.update({
+  id: '/results/$inspectionId',
+  path: '/results/$inspectionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
+  id: '/vehicles/$vehicleId',
+  path: '/vehicles/$vehicleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
-  '/compare': typeof AuthenticatedCompareRoute
-  '/fleet': typeof AuthenticatedFleetRoute
-  '/history': typeof AuthenticatedHistoryRoute
-  '/inspect': typeof AuthenticatedInspectRoute
-  '/results/$inspectionId': typeof AuthenticatedResultsInspectionIdRoute
-  '/vehicles/$vehicleId': typeof AuthenticatedVehiclesVehicleIdRoute
+  '/compare': typeof CompareRoute
+  '/fleet': typeof FleetRoute
+  '/history': typeof HistoryRoute
+  '/inspect': typeof InspectRoute
+  '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
-  '/compare': typeof AuthenticatedCompareRoute
-  '/fleet': typeof AuthenticatedFleetRoute
-  '/history': typeof AuthenticatedHistoryRoute
-  '/inspect': typeof AuthenticatedInspectRoute
-  '/': typeof AuthenticatedIndexRoute
-  '/results/$inspectionId': typeof AuthenticatedResultsInspectionIdRoute
-  '/vehicles/$vehicleId': typeof AuthenticatedVehiclesVehicleIdRoute
+  '/compare': typeof CompareRoute
+  '/fleet': typeof FleetRoute
+  '/history': typeof HistoryRoute
+  '/inspect': typeof InspectRoute
+  '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
-  '/_authenticated/compare': typeof AuthenticatedCompareRoute
-  '/_authenticated/fleet': typeof AuthenticatedFleetRoute
-  '/_authenticated/history': typeof AuthenticatedHistoryRoute
-  '/_authenticated/inspect': typeof AuthenticatedInspectRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/results/$inspectionId': typeof AuthenticatedResultsInspectionIdRoute
-  '/_authenticated/vehicles/$vehicleId': typeof AuthenticatedVehiclesVehicleIdRoute
+  '/compare': typeof CompareRoute
+  '/fleet': typeof FleetRoute
+  '/history': typeof HistoryRoute
+  '/inspect': typeof InspectRoute
+  '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
-    | '/auth'
     | '/compare'
     | '/fleet'
     | '/history'
@@ -121,42 +103,44 @@ export interface FileRouteTypes {
     | '/vehicles/$vehicleId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/about'
-    | '/auth'
     | '/compare'
     | '/fleet'
     | '/history'
     | '/inspect'
-    | '/'
     | '/results/$inspectionId'
     | '/vehicles/$vehicleId'
   id:
     | '__root__'
-    | '/_authenticated'
+    | '/'
     | '/about'
-    | '/auth'
-    | '/_authenticated/compare'
-    | '/_authenticated/fleet'
-    | '/_authenticated/history'
-    | '/_authenticated/inspect'
-    | '/_authenticated/'
-    | '/_authenticated/results/$inspectionId'
-    | '/_authenticated/vehicles/$vehicleId'
+    | '/compare'
+    | '/fleet'
+    | '/history'
+    | '/inspect'
+    | '/results/$inspectionId'
+    | '/vehicles/$vehicleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AuthRoute: typeof AuthRoute
+  CompareRoute: typeof CompareRoute
+  FleetRoute: typeof FleetRoute
+  HistoryRoute: typeof HistoryRoute
+  InspectRoute: typeof InspectRoute
+  ResultsInspectionIdRoute: typeof ResultsInspectionIdRoute
+  VehiclesVehicleIdRoute: typeof VehiclesVehicleIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
+    '/': {
+      id: '/'
+      path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -166,92 +150,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/compare': {
-      id: '/_authenticated/compare'
+    '/compare': {
+      id: '/compare'
       path: '/compare'
       fullPath: '/compare'
-      preLoaderRoute: typeof AuthenticatedCompareRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/fleet': {
-      id: '/_authenticated/fleet'
+    '/fleet': {
+      id: '/fleet'
       path: '/fleet'
       fullPath: '/fleet'
-      preLoaderRoute: typeof AuthenticatedFleetRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof FleetRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/history': {
-      id: '/_authenticated/history'
+    '/history': {
+      id: '/history'
       path: '/history'
       fullPath: '/history'
-      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/inspect': {
-      id: '/_authenticated/inspect'
+    '/inspect': {
+      id: '/inspect'
       path: '/inspect'
       fullPath: '/inspect'
-      preLoaderRoute: typeof AuthenticatedInspectRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof InspectRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/results/$inspectionId': {
-      id: '/_authenticated/results/$inspectionId'
+    '/results/$inspectionId': {
+      id: '/results/$inspectionId'
       path: '/results/$inspectionId'
       fullPath: '/results/$inspectionId'
-      preLoaderRoute: typeof AuthenticatedResultsInspectionIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof ResultsInspectionIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/vehicles/$vehicleId': {
-      id: '/_authenticated/vehicles/$vehicleId'
+    '/vehicles/$vehicleId': {
+      id: '/vehicles/$vehicleId'
       path: '/vehicles/$vehicleId'
       fullPath: '/vehicles/$vehicleId'
-      preLoaderRoute: typeof AuthenticatedVehiclesVehicleIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof VehiclesVehicleIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCompareRoute: typeof AuthenticatedCompareRoute
-  AuthenticatedFleetRoute: typeof AuthenticatedFleetRoute
-  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
-  AuthenticatedInspectRoute: typeof AuthenticatedInspectRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedResultsInspectionIdRoute: typeof AuthenticatedResultsInspectionIdRoute
-  AuthenticatedVehiclesVehicleIdRoute: typeof AuthenticatedVehiclesVehicleIdRoute
-}
-
-const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedCompareRoute: AuthenticatedCompareRoute,
-  AuthenticatedFleetRoute: AuthenticatedFleetRoute,
-  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
-  AuthenticatedInspectRoute: AuthenticatedInspectRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedResultsInspectionIdRoute: AuthenticatedResultsInspectionIdRoute,
-  AuthenticatedVehiclesVehicleIdRoute: AuthenticatedVehiclesVehicleIdRoute,
-}
-
-const AuthenticatedRouteRouteWithChildren =
-  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AuthRoute: AuthRoute,
+  CompareRoute: CompareRoute,
+  FleetRoute: FleetRoute,
+  HistoryRoute: HistoryRoute,
+  InspectRoute: InspectRoute,
+  ResultsInspectionIdRoute: ResultsInspectionIdRoute,
+  VehiclesVehicleIdRoute: VehiclesVehicleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

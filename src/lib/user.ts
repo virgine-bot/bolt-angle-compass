@@ -1,11 +1,21 @@
-import type { User } from "@supabase/supabase-js";
+import { useCallback, useEffect, useState } from "react";
 
-/** Name shown as the inspector on saved inspections. */
-export function displayName(user: Pick<User, "email" | "user_metadata">): string {
-  const meta = user.user_metadata ?? {};
-  const name = (meta["full_name"] ?? meta["name"]) as string | undefined;
-  if (name && name.trim()) return name.trim();
-  return user.email?.split("@")[0] ?? "Team member";
+const KEY = "boltsense.inspector-name";
+export const DEFAULT_INSPECTOR = "Team member";
+
+/** The inspector name typed on this device (no accounts); stored only in this browser. */
+export function useInspectorName() {
+  const [name, setName] = useState("");
+  useEffect(() => {
+    setName(window.localStorage.getItem(KEY) ?? "");
+  }, []);
+  const save = useCallback((next: string) => {
+    const clean = next.trim().slice(0, 40);
+    if (clean) window.localStorage.setItem(KEY, clean);
+    else window.localStorage.removeItem(KEY);
+    setName(clean);
+  }, []);
+  return [name, save] as const;
 }
 
 export function initials(name: string): string {

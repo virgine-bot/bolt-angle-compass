@@ -10,7 +10,7 @@ import { VehicleIcon } from "@/components/bolt/vehicle-icon";
 import { APP_NAME } from "@/lib/app-config";
 import { getVehicle, referencesFor } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/_authenticated/vehicles/$vehicleId")({
+export const Route = createFileRoute("/vehicles/$vehicleId")({
   loader: async ({ context, params }) => {
     const vehicle = getVehicle(params.vehicleId);
     if (!vehicle) throw notFound();

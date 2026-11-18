@@ -1,8 +1,8 @@
-import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { needsRetake } from "@/lib/inspection";
 import { inspectionsKey, saveInspection } from "@/lib/inspections-api";
-import { displayName } from "@/lib/user";
+import { DEFAULT_INSPECTOR, useInspectorName } from "@/lib/user";
 import { ArrowLeft, Check, ChevronRight, Image as ImageIcon, Layers, Loader2, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
@@ -21,7 +21,7 @@ import {
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/inspect")({
+export const Route = createFileRoute("/inspect")({
   validateSearch: (s: Record<string, unknown>): { vehicle?: string | undefined } => ({
     vehicle: typeof s["vehicle"] === "string" ? s["vehicle"] : undefined,
   }),
@@ -39,14 +39,13 @@ export const Route = createFileRoute("/_authenticated/inspect")({
 type Step = "vehicle" | "reference" | "capture" | "processing" | "result";
 const stepOrder: Step[] = ["vehicle", "reference", "capture", "processing", "result"];
 
-const authRoute = getRouteApi("/_authenticated");
-
 function InspectFlow() {
   const search = Route.useSearch();
-  const { user } = authRoute.useRouteContext();
+  const [inspectorName] = useInspectorName();
+  const inspector = inspectorName || DEFAULT_INSPECTOR;
   const queryClient = useQueryClient();
   const save = useMutation({
-    mutationFn: (vars: { inspection: Inspection; photo: string | null }) => saveInspection({ ...vars, user }),
+    mutationFn: (vars: { inspection: Inspection; photo: string | null }) => saveInspection({ ...vars, inspectorName: vars.inspection.inspector }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: inspectionsKey }),
   });
   const navigate = useNavigate();
@@ -79,7 +78,7 @@ function InspectFlow() {
           <ProcessingScreen
             image={captured ?? getReference(referenceId!)!.image}
             onDone={() => {
-              const r = { ...simulateInspection(referenceId!), inspector: displayName(user) };
+              const r = { ...simulateInspection(referenceId!), inspector };
               setResult(r);
               setStep("result");
               if (needsRetake(r.bolts.map((b) => b.confidence))) save.reset();
