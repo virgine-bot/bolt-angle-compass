@@ -10,33 +10,115 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as InspectRouteImport } from './routes/inspect'
+import { Route as ResultsInspectionIdRouteImport } from './routes/results.$inspectionId'
+import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FleetRoute = FleetRouteImport.update({
+  id: '/fleet',
+  path: '/fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectRoute = InspectRouteImport.update({
+  id: '/inspect',
+  path: '/inspect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultsInspectionIdRoute = ResultsInspectionIdRouteImport.update({
+  id: '/results/$inspectionId',
+  path: '/results/$inspectionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
+  id: '/vehicles/$vehicleId',
+  path: '/vehicles/$vehicleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/fleet': typeof FleetRoute
+  '/history': typeof HistoryRoute
+  '/inspect': typeof InspectRoute
+  '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/fleet': typeof FleetRoute
+  '/history': typeof HistoryRoute
+  '/inspect': typeof InspectRoute
+  '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/fleet': typeof FleetRoute
+  '/history': typeof HistoryRoute
+  '/inspect': typeof InspectRoute
+  '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/fleet'
+    | '/history'
+    | '/inspect'
+    | '/results/$inspectionId'
+    | '/vehicles/$vehicleId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about'
+    | '/fleet'
+    | '/history'
+    | '/inspect'
+    | '/results/$inspectionId'
+    | '/vehicles/$vehicleId'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/fleet'
+    | '/history'
+    | '/inspect'
+    | '/results/$inspectionId'
+    | '/vehicles/$vehicleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  FleetRoute: typeof FleetRoute
+  HistoryRoute: typeof HistoryRoute
+  InspectRoute: typeof InspectRoute
+  ResultsInspectionIdRoute: typeof ResultsInspectionIdRoute
+  VehiclesVehicleIdRoute: typeof VehiclesVehicleIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +130,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fleet': {
+      id: '/fleet'
+      path: '/fleet'
+      fullPath: '/fleet'
+      preLoaderRoute: typeof FleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspect': {
+      id: '/inspect'
+      path: '/inspect'
+      fullPath: '/inspect'
+      preLoaderRoute: typeof InspectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results/$inspectionId': {
+      id: '/results/$inspectionId'
+      path: '/results/$inspectionId'
+      fullPath: '/results/$inspectionId'
+      preLoaderRoute: typeof ResultsInspectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vehicles/$vehicleId': {
+      id: '/vehicles/$vehicleId'
+      path: '/vehicles/$vehicleId'
+      fullPath: '/vehicles/$vehicleId'
+      preLoaderRoute: typeof VehiclesVehicleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  FleetRoute: FleetRoute,
+  HistoryRoute: HistoryRoute,
+  InspectRoute: InspectRoute,
+  ResultsInspectionIdRoute: ResultsInspectionIdRoute,
+  VehiclesVehicleIdRoute: VehiclesVehicleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

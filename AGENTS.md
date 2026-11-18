@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- Inspection thresholds and the retake rule live only in `src/lib/inspection.ts` (with tests); UI reads them from there so the model team can tune them in one place.
+- All data comes from `src/lib/mock-data.ts` until the model/backend API exists; swap those getters for API calls rather than editing screens.
+- The app is a mobile-first prototype: every screen renders inside `AppShell` (max 430px column, bottom nav).
