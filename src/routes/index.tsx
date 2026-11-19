@@ -10,18 +10,17 @@ import { AppShell } from "@/components/bolt/app-shell";
 import { InspectionRow, worstStatus } from "@/components/bolt/inspection-row";
 import { LogoMark } from "@/components/bolt/logo-mark";
 import { APP_NAME } from "@/lib/app-config";
-import { getBoltStatus } from "@/lib/inspection";
-import { vehicles } from "@/lib/mock-data";
+import { measuredStatus } from "@/lib/inspection";
 import boltStem from "@/assets/bolt-stem.jpg";
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [
-      { title: `${APP_NAME} — Fleet inspection dashboard` },
-      { name: "description", content: "See which bolts on your two-wheeled fleet have loosened and start a new photo inspection." },
-      { property: "og:title", content: `${APP_NAME} — Fleet inspection dashboard` },
-      { property: "og:description", content: "See which bolts on your two-wheeled fleet have loosened and start a new photo inspection." },
+      { title: `${APP_NAME} — Bolt inspection dashboard` },
+      { name: "description", content: "See which bolts on motorbikes, bicycles and scooters have loosened and start a new photo inspection." },
+      { property: "og:title", content: `${APP_NAME} — Bolt inspection dashboard` },
+      { property: "og:description", content: "See which bolts on motorbikes, bicycles and scooters have loosened and start a new photo inspection." },
     ],
   }),
   component: Home,
@@ -34,9 +33,9 @@ function Home() {
   const inspections = latestPerArea(all);
   const hour = new Date().getHours();
   const allBolts = inspections.flatMap((i) => i.bolts);
-  const flagged = allBolts.filter((b) => getBoltStatus(b.angle) !== "ok").length;
+  const flagged = allBolts.map((b) => measuredStatus(b.angle)).filter((s) => s !== null && s !== "ok").length;
   const avgMs = inspections.reduce((s, i) => s + i.processingMs, 0) / Math.max(1, inspections.length);
-  const attention = inspections.filter((i) => worstStatus(i) !== "ok");
+  const attention = inspections.filter((i) => { const w = worstStatus(i); return w !== "ok" && w !== "detected"; });
 
   return (
     <AppShell>
@@ -111,7 +110,7 @@ function Home() {
               <br />
               inspection
             </p>
-            <p className="mt-1 max-w-[60%] text-sm text-scan-muted">Compare today's photo with a reference to measure bolt rotation.</p>
+            <p className="mt-1 max-w-[60%] text-sm text-scan-muted">Photograph any bolt on a motorbike, bicycle or scooter.</p>
             <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
               Open camera <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </span>
@@ -120,7 +119,7 @@ function Home() {
       </section>
 
       <section className="grid grid-cols-3 gap-2 px-5 pt-4">
-        <Kpi label="Vehicles" value={String(vehicles.length)} />
+        <Kpi label="Spots checked" value={String(inspections.length)} />
         <Kpi label="Flagged bolts" value={String(flagged)} tone="alert" />
         <Kpi label="Avg. time" value={`${(avgMs / 1000).toFixed(1)}s`} />
       </section>
@@ -136,6 +135,9 @@ function Home() {
           {attention.map((i) => (
             <InspectionRow key={i.id} inspection={i} />
           ))}
+          {attention.length === 0 && (
+            <p className="rounded-2xl border border-dashed p-5 text-center text-sm text-muted-foreground">No loose or flagged bolts right now.</p>
+          )}
         </div>
       </section>
     </AppShell>

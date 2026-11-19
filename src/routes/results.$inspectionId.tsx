@@ -7,7 +7,7 @@ import { ResultView } from "@/components/bolt/result-view";
 import { APP_NAME } from "@/lib/app-config";
 import { findInspection, previousOf } from "@/lib/history";
 import { inspectionsQuery } from "@/lib/inspections-api";
-import { getVehicle } from "@/lib/mock-data";
+import { DEFAULT_AREA, vehicleTypeLabel } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/results/$inspectionId")({
   loader: async ({ context, params }) => {
@@ -43,16 +43,15 @@ function ResultPage() {
   const { data: list } = useSuspenseQuery(inspectionsQuery());
   const inspection = findInspection(list, inspectionId)!;
   const prev = previousOf(list, inspection);
-  const v = getVehicle(inspection.vehicleId)!;
   return (
     <AppShell>
       <header className="flex items-center gap-3 px-5 pt-6 pb-4">
-        <Link to="/vehicles/$vehicleId" params={{ vehicleId: v.id }} className="flex size-10 items-center justify-center rounded-full border bg-card" aria-label="Back">
+        <Link to="/history" className="flex size-10 items-center justify-center rounded-full border bg-card" aria-label="Back">
           <ArrowLeft className="size-5" />
         </Link>
         <div>
-          <p className="eyebrow">{inspection.id.toUpperCase()} · {inspection.inspector}</p>
-          <h1 className="font-display text-xl font-extrabold">{v.code} · {v.name}</h1>
+          <p className="eyebrow">{vehicleTypeLabel(inspection.vehicleType)} · {inspection.inspector}</p>
+          <h1 className="font-display text-xl font-extrabold">{inspection.area ?? DEFAULT_AREA}</h1>
         </div>
       </header>
       <ResultView inspection={inspection} inspectionImage={inspection.photoUrl ?? undefined} />

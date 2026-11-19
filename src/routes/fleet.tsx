@@ -1,105 +1,92 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, Search } from "lucide-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { AppShell, ScreenHeader } from "@/components/bolt/app-shell";
-import { worstStatus } from "@/components/bolt/inspection-row";
-import { StatusBadge } from "@/components/bolt/status-badge";
+import { InspectionRow, worstStatus } from "@/components/bolt/inspection-row";
 import { VehicleIcon } from "@/components/bolt/vehicle-icon";
 import { APP_NAME } from "@/lib/app-config";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { inspectionsForVehicle } from "@/lib/history";
+import { inspectionsForType, latestPerArea } from "@/lib/history";
 import { inspectionsQuery } from "@/lib/inspections-api";
-import { referencesFor, vehicles, type VehicleType } from "@/lib/mock-data";
+import { DEFAULT_AREA, vehicleTypes, type VehicleType } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/fleet")({
   loader: ({ context }) => context.queryClient.ensureQueryData(inspectionsQuery()).then(() => undefined),
   head: () => ({
     meta: [
-      { title: `Fleet — ${APP_NAME}` },
-      { name: "description", content: "All bicycles, scooters and motorbikes in the fleet with their latest bolt inspection status." },
-      { property: "og:title", content: `Fleet — ${APP_NAME}` },
-      { property: "og:description", content: "All bicycles, scooters and motorbikes in the fleet with their latest bolt inspection status." },
+      { title: `Vehicles — ${APP_NAME}` },
+      { name: "description", content: "Inspected bolts grouped by motorbike, bicycle and scooter, with the latest status of each spot." },
+      { property: "og:title", content: `Vehicles — ${APP_NAME}` },
+      { property: "og:description", content: "Inspected bolts grouped by motorbike, bicycle and scooter, with the latest status of each spot." },
     ],
   }),
-  component: Fleet,
+  component: Vehicles,
 });
 
-const filters: Array<{ id: VehicleType | "all"; label: string }> = [
-  { id: "all", label: "All" },
-  { id: "scooter", label: "Scooters" },
-  { id: "motorbike", label: "Motorbikes" },
-  { id: "bicycle", label: "Bicycles" },
-];
-
-function Fleet() {
-  const [filter, setFilter] = useState<VehicleType | "all">("all");
+function Vehicles() {
+  const [type, setType] = useState<VehicleType>("motorbike");
   const [q, setQ] = useState("");
   const { data: all } = useSuspenseQuery(inspectionsQuery());
-  const list = vehicles.filter(
-    (v) =>
-      (filter === "all" || v.type === filter) &&
-      `${v.code} ${v.name} ${v.depot}`.toLowerCase().includes(q.toLowerCase()),
+  const spots = latestPerArea(inspectionsForType(all, type)).filter((i) =>
+    `${i.area ?? DEFAULT_AREA} ${i.inspector}`.toLowerCase().includes(q.toLowerCase()),
   );
 
   return (
     <AppShell>
-      <ScreenHeader eyebrow={`${vehicles.length} vehicles`} title="Fleet" />
-      <div className="px-5">
+      <ScreenHeader eyebrow="Grouped by type" title="Vehicles" />
+      <div className="grid grid-cols-3 gap-2 px-5">
+        {vehicleTypes.map((t) => {
+          const latest = latestPerArea(inspectionsForType(all, t.id));
+          const flagged = latest.filter((i) => ["loose", "monitor", "retake"].includes(worstStatus(i))).length;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setType(t.id)}
+              className={cn(
+                "flex flex-col items-start gap-2 rounded-2xl border bg-card p-3 text-left shadow-card transition-colors",
+                type === t.id && "border-foreground bg-foreground text-background",
+              )}
+            >
+              <VehicleIcon type={t.id} className="size-6" />
+              <span className="text-sm font-semibold">{t.plural}</span>
+              <span className={cn("font-mono text-[11px]", type === t.id ? "opacity-70" : "text-muted-foreground")}>
+                {latest.length} spot{latest.length !== 1 && "s"}
+                {flagged > 0 && ` · ${flagged} flagged`}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="px-5 pt-4">
         <label className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2.5">
           <Search className="size-4 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search code, model or depot"
+            placeholder="Search part or inspector"
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </label>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {filters.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setFilter(f.id)}
-              className={cn(
-                "shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
-                filter === f.id ? "border-foreground bg-foreground text-background" : "bg-card text-muted-foreground",
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="flex flex-col gap-2.5 px-5 pt-4">
-        {list.map((v) => {
-          const last = inspectionsForVehicle(all, v.id)[0];
-          return (
-            <Link
-              key={v.id}
-              to="/vehicles/$vehicleId"
-              params={{ vehicleId: v.id }}
-              className="flex items-center gap-3 rounded-2xl border bg-card p-4 shadow-card"
-            >
-              <div className="flex size-12 items-center justify-center rounded-xl bg-secondary">
-                <VehicleIcon type={v.type} className="size-6" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-[11px] text-muted-foreground">{v.code}</p>
-                <p className="truncate font-semibold">{v.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {v.depot} · {referencesFor(v.id).length} reference{referencesFor(v.id).length !== 1 && "s"}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                {last ? <StatusBadge status={worstStatus(last)} /> : <StatusBadge status="retake" label="New" />}
-                <ChevronRight className="size-4 text-muted-foreground" />
-              </div>
-            </Link>
-          );
-        })}
-        {list.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">No vehicles match.</p>}
+        <p className="eyebrow">Latest check per spot</p>
+        {spots.map((i) => (
+          <InspectionRow key={i.id} inspection={i} />
+        ))}
+        {spots.length === 0 && (
+          <p className="py-8 text-center text-sm text-muted-foreground">No inspections here yet.</p>
+        )}
+        <Link
+          to="/inspect"
+          search={{ vehicle: type }}
+          className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-dashed py-4 text-sm font-semibold"
+        >
+          <Plus className="size-4" /> Inspect a {vehicleTypes.find((t) => t.id === type)?.label.toLowerCase()}
+        </Link>
       </div>
     </AppShell>
   );

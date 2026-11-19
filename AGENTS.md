@@ -32,5 +32,6 @@ use the editor.
 ## Project rules
 
 - Inspection thresholds and the retake rule live only in `src/lib/inspection.ts` (with tests); UI reads them from there so the model team can tune them in one place.
-- All data comes from `src/lib/mock-data.ts` until the model/backend API exists; swap those getters for API calls rather than editing screens.
+- Saved inspections and photos go through `src/lib/inspections-api.ts` only; detection is simulated by `simulateInspection` in `src/lib/mock-data.ts` until the model API exists, so swap that one function rather than editing screens.
+- Inspections are general (vehicle type + optional free-text part + optional reference photo), not tied to registered vehicles; re-checks of the same spot share a `seriesId` so they can be compared.
 - The app is a mobile-first prototype: every screen renders inside `AppShell` (max 430px column, bottom nav).

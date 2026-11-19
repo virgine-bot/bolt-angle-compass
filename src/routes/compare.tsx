@@ -7,9 +7,9 @@ import { BoltPhoto } from "@/components/bolt/bolt-photo";
 import { StatusBadge } from "@/components/bolt/status-badge";
 import { APP_NAME } from "@/lib/app-config";
 import { compareInspections, findInspection, sameAreaInspections } from "@/lib/history";
-import { formatAngle, getBoltStatus } from "@/lib/inspection";
+import { formatAngle, measuredStatus } from "@/lib/inspection";
 import { inspectionsQuery } from "@/lib/inspections-api";
-import { getReference, getVehicle, type Inspection } from "@/lib/mock-data";
+import { DEFAULT_AREA, samplePhotos, vehicleTypeLabel, type Inspection } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/compare")({
@@ -29,6 +29,8 @@ export const Route = createFileRoute("/compare")({
   component: ComparePage,
 });
 
+const angleText = (a: number | null | undefined) => (a == null ? "—" : formatAngle(a));
+
 function ComparePage() {
   const { a, b } = Route.useSearch();
   const { data: list } = useSuspenseQuery(inspectionsQuery());
@@ -44,18 +46,16 @@ function ComparePage() {
       </AppShell>
     );
   }
-  const ref = getReference(later.referenceId)!;
-  const v = getVehicle(later.vehicleId)!;
   const changes = compareInspections(earlier, later);
-  const others = sameAreaInspections(list, later.referenceId).filter((i) => i.id !== later.id);
+  const others = sameAreaInspections(list, later.seriesId).filter((i) => i.id !== later.id);
   const worsened = changes.filter((c) => c.worsened).length;
 
   const photo = (ins: Inspection, label: string) => (
     <figure className="overflow-hidden rounded-2xl bg-scan">
       <BoltPhoto
-        src={ins.photoUrl ?? ref.image}
+        src={ins.photoUrl ?? ins.referencePhotoUrl ?? samplePhotos[0]!}
         alt={`${label} inspection`}
-        markers={ins.bolts.map((r) => ({ bolt: ref.bolts.find((x) => x.id === r.boltId)!, status: getBoltStatus(r.angle) })).filter((m) => m.bolt)}
+        markers={ins.bolts.map((r) => ({ bolt: r, status: measuredStatus(r.angle) ?? undefined }))}
       />
       <figcaption className="px-3 py-2 text-scan-foreground">
         <p className="text-[10px] uppercase tracking-wider text-scan-muted">{label}</p>
@@ -68,11 +68,16 @@ function ComparePage() {
   return (
     <AppShell>
       <header className="px-5 pt-6 pb-4">
-        <Link to="/vehicles/$vehicleId" params={{ vehicleId: v.id }} className="flex size-10 items-center justify-center rounded-full border bg-card" aria-label="Back">
+        <Link
+          to="/results/$inspectionId"
+          params={{ inspectionId: later.id }}
+          className="flex size-10 items-center justify-center rounded-full border bg-card"
+          aria-label="Back"
+        >
           <ArrowLeft className="size-5" />
         </Link>
-        <p className="eyebrow mt-5">{v.code} · Compare</p>
-        <h1 className="mt-1 font-display text-[26px] font-extrabold tracking-tight">{ref.location}</h1>
+        <p className="eyebrow mt-5">{vehicleTypeLabel(later.vehicleType)} · Compare</p>
+        <h1 className="mt-1 font-display text-[26px] font-extrabold tracking-tight">{later.area ?? DEFAULT_AREA}</h1>
       </header>
 
       <div className="grid grid-cols-2 gap-3 px-5">
@@ -93,20 +98,23 @@ function ComparePage() {
       <section className="flex flex-col gap-2.5 px-5 pt-5">
         <p className="eyebrow">Per bolt</p>
         {changes.map((c) => {
-          const bolt = ref.bolts.find((x) => x.id === c.boltId);
+          const bolt = c.after ?? c.before;
           return (
             <div key={c.boltId} className={cn("rounded-2xl border bg-card p-3 shadow-card", c.worsened && "border-loose")}>
               <div className="flex items-center justify-between">
-                <p className="font-mono text-xs text-muted-foreground">{bolt?.label ?? c.boltId} · {bolt?.spec}</p>
-                <p className="font-readout text-lg font-semibold">{c.delta === null ? "—" : formatAngle(c.delta)}</p>
+                <p className="font-mono text-xs text-muted-foreground">
+                  {bolt?.label ?? c.boltId}
+                  {bolt?.spec ? ` · ${bolt.spec}` : ""}
+                </p>
+                <p className="font-readout text-lg font-semibold">{angleText(c.delta)}</p>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                 <div className="flex items-center justify-between rounded-lg bg-secondary px-2 py-1.5">
-                  <span className="font-readout">{c.before ? formatAngle(c.before.angle) : "—"}</span>
+                  <span className="font-readout">{angleText(c.before?.angle)}</span>
                   {c.beforeStatus && <StatusBadge status={c.beforeStatus} />}
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-secondary px-2 py-1.5">
-                  <span className="font-readout">{c.after ? formatAngle(c.after.angle) : "—"}</span>
+                  <span className="font-readout">{angleText(c.after?.angle)}</span>
                   {c.afterStatus && <StatusBadge status={c.afterStatus} />}
                 </div>
               </div>
