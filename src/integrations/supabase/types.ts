@@ -43,7 +43,7 @@ export type Database = {
           reference_id?: string | null
           reference_photo_path?: string | null
           vehicle_id?: string | null
-          vehicle_type?: string
+          vehicle_type: string
         }
         Update: {
           area_label?: string | null
