@@ -1,6 +1,5 @@
 # MAGANG
 
-jadi aku ada projek utuk membuat aplikasi untuk membuat aplikasi untuk sistem yang kita mau bangun seperti file diatas, dan tim kita sudah membagi tugas dimana seperti pada foto yang aku kirim itu. karna aku yangs seraphim maka aku harus membuat aplikasinya, nah apakah kamu bisa membantu aku untuk membuat UI nya?
 
 This project was built with [Lovable](https://lovable.dev).
 
