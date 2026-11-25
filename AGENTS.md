@@ -35,3 +35,4 @@ use the editor.
 - Saved inspections and photos go through `src/lib/inspections-api.ts` only; detection is simulated by `simulateInspection` in `src/lib/mock-data.ts` until the model API exists, so swap that one function rather than editing screens.
 - Inspections are general (vehicle type + optional free-text part + optional reference photo), not tied to registered vehicles; re-checks of the same spot share a `seriesId` so they can be compared.
 - The app is a mobile-first prototype: every screen renders inside `AppShell` (max 430px column, bottom nav).
+- Saved vehicles and their reference photos go through `src/lib/vehicles-api.ts` only; linking a vehicle to an inspection is optional so quick checks without a saved vehicle keep working.

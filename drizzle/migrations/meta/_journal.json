@@ -29,6 +29,13 @@
       "when": 1795060684022,
       "tag": "0003_only_two_wheeler_types",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795584356150,
+      "tag": "0004_saved_vehicles",
+      "breakpoints": true
     }
   ]
 }

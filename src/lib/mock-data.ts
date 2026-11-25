@@ -43,6 +43,8 @@ export interface Inspection {
   area: string | null;
   /** Inspections of the same spot share a series id, so they can be compared over time. */
   seriesId: string;
+  /** Saved vehicle this inspection belongs to, if any. */
+  vehicleId?: string | null | undefined;
   capturedAt: string;
   processingMs: number;
   inspector: string;

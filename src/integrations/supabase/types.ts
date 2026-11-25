@@ -62,6 +62,65 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_references: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          photo_path: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          photo_path: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          photo_path?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_references_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          plate: string | null
+          vehicle_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          plate?: string | null
+          vehicle_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          plate?: string | null
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

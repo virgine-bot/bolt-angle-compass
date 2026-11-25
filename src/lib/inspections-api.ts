@@ -45,6 +45,7 @@ async function toInspections(rows: Row[]): Promise<Inspection[]> {
       vehicleType: isVehicleType(r.vehicle_type) ? r.vehicle_type : "motorbike",
       area: r.area_label,
       seriesId: r.reference_id ?? r.id,
+      vehicleId: r.vehicle_id,
       capturedAt: r.captured_at,
       processingMs: r.processing_ms,
       inspector: r.inspector_name,
@@ -88,7 +89,7 @@ async function toJpegBlob(src: string, maxSide = 1600): Promise<Blob> {
   );
 }
 
-async function upload(path: string, src: string) {
+export async function upload(path: string, src: string) {
   const { error } = await supabase.storage.from(BUCKET).upload(path, await toJpegBlob(src), { contentType: "image/jpeg" });
   if (error) throw error;
 }
@@ -125,6 +126,7 @@ export async function saveInspection({
     processing_ms: inspection.processingMs,
     inspector_name: inspection.inspector,
     inspector_id: null,
+    vehicle_id: inspection.vehicleId ?? null,
     bolts: inspection.bolts as unknown as Json,
     photo_path: photoPath,
     reference_photo_path: referencePath,

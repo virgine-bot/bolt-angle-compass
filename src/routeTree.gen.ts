@@ -16,6 +16,7 @@ import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as InspectRouteImport } from './routes/inspect'
 import { Route as ResultsInspectionIdRouteImport } from './routes/results.$inspectionId'
+import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const ResultsInspectionIdRoute = ResultsInspectionIdRouteImport.update({
   path: '/results/$inspectionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
+  id: '/vehicles/$vehicleId',
+  path: '/vehicles/$vehicleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/inspect': typeof InspectRoute
   '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/inspect': typeof InspectRoute
   '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/inspect': typeof InspectRoute
   '/results/$inspectionId': typeof ResultsInspectionIdRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inspect'
     | '/results/$inspectionId'
+    | '/vehicles/$vehicleId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inspect'
     | '/results/$inspectionId'
+    | '/vehicles/$vehicleId'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inspect'
     | '/results/$inspectionId'
+    | '/vehicles/$vehicleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   InspectRoute: typeof InspectRoute
   ResultsInspectionIdRoute: typeof ResultsInspectionIdRoute
+  VehiclesVehicleIdRoute: typeof VehiclesVehicleIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResultsInspectionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vehicles/$vehicleId': {
+      id: '/vehicles/$vehicleId'
+      path: '/vehicles/$vehicleId'
+      fullPath: '/vehicles/$vehicleId'
+      preLoaderRoute: typeof VehiclesVehicleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   InspectRoute: InspectRoute,
   ResultsInspectionIdRoute: ResultsInspectionIdRoute,
+  VehiclesVehicleIdRoute: VehiclesVehicleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

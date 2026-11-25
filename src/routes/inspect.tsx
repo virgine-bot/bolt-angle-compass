@@ -24,10 +24,12 @@ import {
 } from "@/lib/mock-data";
 import { DEFAULT_INSPECTOR, useInspectorName } from "@/lib/user";
 import { cn } from "@/lib/utils";
+import { vehiclesQuery, type VehicleReference } from "@/lib/vehicles-api";
 
 export const Route = createFileRoute("/inspect")({
-  validateSearch: (s: Record<string, unknown>): { vehicle?: string | undefined } => ({
+  validateSearch: (s: Record<string, unknown>): { vehicle?: string | undefined; vehicleId?: string | undefined } => ({
     vehicle: typeof s["vehicle"] === "string" ? s["vehicle"] : undefined,
+    vehicleId: typeof s["vehicleId"] === "string" ? s["vehicleId"] : undefined,
   }),
   head: () => ({
     meta: [
@@ -46,7 +48,8 @@ type Step = "type" | "setup" | "capture" | "processing" | "result";
 type ReferenceChoice =
   | { kind: "none" }
   | { kind: "new"; photo: string }
-  | { kind: "earlier"; inspection: Inspection };
+  | { kind: "earlier"; inspection: Inspection }
+  | { kind: "saved"; ref: VehicleReference };
 
 const readFile = (f: File) =>
   new Promise<string>((resolve, reject) => {
@@ -63,6 +66,9 @@ function InspectFlow() {
   const inspector = inspectorName || DEFAULT_INSPECTOR;
   const queryClient = useQueryClient();
   const { data: all = [] } = useQuery(inspectionsQuery());
+  const { data: vehicles = [] } = useQuery(vehiclesQuery());
+  const [vehicleId, setVehicleId] = useState<string | null>(search.vehicleId ?? null);
+  const vehicle = vehicles.find((v) => v.id === vehicleId) ?? null;
 
   const initialType = search.vehicle && isVehicleType(search.vehicle) ? search.vehicle : null;
   const [type, setType] = useState<VehicleType | null>(initialType);
@@ -85,7 +91,9 @@ function InspectFlow() {
                   const p = vars.reference.inspection.referencePhotoPath ?? vars.reference.inspection.photoPath;
                   return p ? { storedPath: p } : null;
                 })()
-              : null,
+              : vars.reference.kind === "saved"
+                ? { storedPath: vars.reference.ref.photoPath }
+                : null,
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: inspectionsKey }),
   });
@@ -95,7 +103,9 @@ function InspectFlow() {
       ? reference.photo
       : reference.kind === "earlier"
         ? (reference.inspection.referencePhotoUrl ?? reference.inspection.photoUrl ?? null)
-        : null;
+        : reference.kind === "saved"
+          ? reference.ref.photoUrl
+          : null;
 
   const back = () => {
     if (step === "type") navigate({ to: "/" });
@@ -112,8 +122,9 @@ function InspectFlow() {
     const r: Inspection = {
       id,
       vehicleType: type ?? "motorbike",
-      area: earlier ? earlier.area : area.trim() || null,
+      area: earlier ? earlier.area : reference.kind === "saved" ? reference.ref.label : area.trim() || null,
       seriesId: earlier ? earlier.seriesId : id,
+      vehicleId: earlier ? (earlier.vehicleId ?? vehicleId) : vehicleId,
       capturedAt: new Date().toISOString(),
       processingMs: sim.processingMs,
       inspector,
@@ -133,7 +144,7 @@ function InspectFlow() {
       <AppShell hideNav tone="scan">
         {step === "capture" ? (
           <CaptureScreen
-            title={reference.kind === "earlier" ? (reference.inspection.area ?? DEFAULT_AREA) : area.trim() || DEFAULT_AREA}
+            title={reference.kind === "earlier" ? (reference.inspection.area ?? DEFAULT_AREA) : reference.kind === "saved" ? reference.ref.label : area.trim() || DEFAULT_AREA}
             referenceImage={referenceImage}
             guideBolts={reference.kind === "earlier" ? reference.inspection.bolts : []}
             onBack={back}
@@ -149,7 +160,10 @@ function InspectFlow() {
     );
   }
 
-  const earlierSpots = type ? latestPerArea(inspectionsForType(all, type)).slice(0, 6) : [];
+  const earlierSpots = type
+    ? latestPerArea(inspectionsForType(all, type).filter((i) => !vehicleId || i.vehicleId === vehicleId)).slice(0, 6)
+    : [];
+  const typeVehicles = vehicles.filter((v) => v.vehicleType === type);
 
   return (
     <AppShell hideNav={step === "result"}>
@@ -178,6 +192,7 @@ function InspectFlow() {
                 onClick={() => {
                   setType(t.id);
                   setReference({ kind: "none" });
+                  if (vehicle && vehicle.vehicleType !== t.id) setVehicleId(null);
                   setStep("setup");
                 }}
                 className={cn(
@@ -201,18 +216,40 @@ function InspectFlow() {
           <p className="eyebrow">Step 2 of 3 · {vehicleTypeLabel(type)}</p>
           <h1 className="mt-1 font-display text-[26px] font-extrabold tracking-tight">Before the photo</h1>
 
+          {typeVehicles.length > 0 && (
+            <label className="mt-5 block">
+              <span className="text-sm font-semibold">Saved vehicle <span className="font-normal text-muted-foreground">(optional)</span></span>
+              <select
+                value={vehicleId ?? ""}
+                onChange={(e) => {
+                  setVehicleId(e.target.value || null);
+                  setReference({ kind: "none" });
+                }}
+                className="mt-2 w-full rounded-xl border bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <option value="">None — quick check</option>
+                {typeVehicles.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                    {v.plate ? ` (${v.plate})` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
           <label className="mt-5 block">
             <span className="text-sm font-semibold">Which part? <span className="font-normal text-muted-foreground">(optional)</span></span>
             <input
-              value={reference.kind === "earlier" ? (reference.inspection.area ?? DEFAULT_AREA) : area}
-              disabled={reference.kind === "earlier"}
+              value={reference.kind === "earlier" ? (reference.inspection.area ?? DEFAULT_AREA) : reference.kind === "saved" ? reference.ref.label : area}
+              disabled={reference.kind === "earlier" || reference.kind === "saved"}
               onChange={(e) => setArea(e.target.value)}
               maxLength={60}
               placeholder={DEFAULT_AREA}
               className="mt-2 w-full rounded-xl border bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
             />
           </label>
-          {reference.kind !== "earlier" && (
+          {reference.kind !== "earlier" && reference.kind !== "saved" && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {areaSuggestions.map((s) => (
                 <button
@@ -246,6 +283,28 @@ function InspectFlow() {
               onPhoto={(photo) => setReference({ kind: "new", photo })}
             />
           </div>
+
+          {vehicle && vehicle.references.length > 0 && (
+            <>
+              <p className="mt-5 text-sm font-semibold">Reference photos of {vehicle.name}</p>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {vehicle.references.map((ref) => {
+                  const selected = reference.kind === "saved" && reference.ref.id === ref.id;
+                  return (
+                    <button
+                      key={ref.id}
+                      type="button"
+                      onClick={() => setReference(selected ? { kind: "none" } : { kind: "saved", ref })}
+                      className={cn("overflow-hidden rounded-xl border bg-card text-left", selected && "border-primary ring-2 ring-primary/30")}
+                    >
+                      {ref.photoUrl && <img src={ref.photoUrl} alt="" className="aspect-square w-full object-cover" />}
+                      <p className="truncate px-1.5 py-1 text-[11px] font-medium">{ref.label}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
           {earlierSpots.length > 0 && (
             <>
